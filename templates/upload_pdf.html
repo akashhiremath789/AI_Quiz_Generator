@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Upload PDF{% endblock %}
+{% block heading %}Quiz from a PDF{% endblock %}
+{% block subheading %}Questions are created only from your uploaded material.{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+  <form method="post" action="{{ url_for('quiz.upload_pdf') }}" enctype="multipart/form-data" novalidate data-validate data-loading>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label for="pdf_file" class="dropzone" id="dropzone">
+        <div class="big">📄</div>
+        <strong>Drop your PDF here or click to browse</strong>
+        <div class="hint">PDF only, up to {{ max_mb|default(10) }} MB. Scanned images without text are not supported.</div>
+        <div class="file-name" id="fileName"></div>
+        <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf,.pdf" required data-max-mb="{{ max_mb|default(10) }}">
+      </label>
+      <div class="field-error" id="fileError"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="title">Quiz title <span class="hint">(optional)</span></label>
+      <input type="text" id="title" name="title" maxlength="150" placeholder="e.g. Unit 3 notes">
+    </div>
+
+    <div class="form-group">
+      <label>Number of questions</label>
+      <div class="choice">
+        {% for n in [5, 10, 15] %}
+        <input type="radio" name="num_questions" id="n{{ n }}" value="{{ n }}" {{ 'checked' if n == 5 }}>
+        <label for="n{{ n }}">{{ n }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Difficulty</label>
+      <div class="choice">
+        {% for d in ['Easy', 'Medium', 'Hard'] %}
+        <input type="radio" name="difficulty" id="d{{ d }}" value="{{ d }}" {{ 'checked' if d == 'Medium' }}>
+        <label for="d{{ d }}">{{ d }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button class="btn" type="submit"><span class="spinner"></span><span class="label" data-loading-text="Reading PDF and generating…">Upload and generate</span></button>
+  </form>
+</div>
+{% endblock %}

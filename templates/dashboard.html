@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Hi, {{ session.get('user_name', '').split(' ')[0] }}{% endblock %}
+{% block subheading %}Here is how your practice is going.{% endblock %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>{% endblock %}
+
+{% block content %}
+<section class="card hero">
+  <div>
+    <h2>Ready for your next quiz?</h2>
+    <p>Pick a topic or upload your notes and start practising.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('quiz.generate') }}">Generate a quiz</a>
+</section>
+
+<section class="grid stats">
+  <div class="card stat"><div class="stat-ico">📚</div><div><div class="stat-val">{{ stats.generated }}</div><div class="stat-lbl">Quizzes generated</div></div></div>
+  <div class="card stat"><div class="stat-ico">📝</div><div><div class="stat-val">{{ stats.attempted }}</div><div class="stat-lbl">Quizzes attempted</div></div></div>
+  <div class="card stat"><div class="stat-ico">🎯</div><div><div class="stat-val">{{ stats.avg_score }}%</div><div class="stat-lbl">Average score</div></div></div>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>Recent attempts</h2>
+    {% if recent_attempts %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Quiz</th><th>Score</th><th>Date</th><th></th></tr></thead>
+        <tbody>
+        {% for a in recent_attempts %}
+          <tr>
+            <td><strong>{{ a.title }}</strong><div class="hint">{{ a.subject }}</div></td>
+            <td><span class="badge {{ 'b-good' if a.percentage >= 70 else ('b-mid' if a.percentage >= 40 else 'b-bad') }}">{{ a.score }}/{{ a.total_questions }} · {{ a.percentage }}%</span></td>
+            <td>{{ a.attempted_at.strftime('%d %b %Y') }}</td>
+            <td><a class="btn btn-ghost btn-sm" href="{{ url_for('quiz.result', attempt_id=a.id) }}">Review</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="big">🧠</div>
+      <h3>No attempts yet</h3>
+      <p>Your scores will show up here after your first quiz.</p>
+      <a class="btn btn-sm" href="{{ url_for('quiz.generate') }}">Generate a quiz</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Score trend</h2>
+    {% if chart_scores %}
+    <div class="chart-box"><canvas id="scoreChart"></canvas></div>
+    {% else %}
+    <div class="empty"><p>Complete a quiz to see your trend.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+{% if subject_scores %}
+<section class="card" style="margin-top:20px">
+  <h2>Average score by subject</h2>
+  <div class="chart-box"><canvas id="subjectChart"></canvas></div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if subject_scores %}
+<script>
+  window.addEventListener('load', function () {
+    new Chart(document.getElementById('subjectChart'), {
+      type: 'bar',
+      data: { labels: {{ subject_labels|tojson }}, datasets: [{ label: 'Average score (%)', data: {{ subject_scores|tojson }},
+        backgroundColor: '#6C4DF6', hoverBackgroundColor: '#2F6BFF', borderRadius: 8, maxBarThickness: 48 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#EEF0F7' } }, x: { grid: { display: false } } } }
+    });
+  });
+</script>
+{% endif %}
+{% if chart_scores %}
+<script>
+  const labels = {{ chart_labels|tojson }};
+  const scores = {{ chart_scores|tojson }};
+  const ctx = document.getElementById('scoreChart');
+  const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 260);
+  grad.addColorStop(0, 'rgba(108,77,246,.35)');
+  grad.addColorStop(1, 'rgba(47,107,255,0)');
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Score (%)', data: scores, borderColor: '#6C4DF6', backgroundColor: grad,
+      fill: true, tension: .35, pointBackgroundColor: '#2F6BFF', pointRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#EEF0F7' } }, x: { grid: { display: false } } } }
+  });
+</script>
+{% endif %}
+{% endblock %}

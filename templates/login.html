@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block auth %}
+<div class="auth-wrap">
+  <section class="auth-side">
+    <h1>Study smarter with AI-made quizzes.</h1>
+    <p>Type a topic or upload your notes and get a practice quiz in seconds.</p>
+    <ul>
+      <li>Quizzes from any topic or PDF</li>
+      <li>Timed practice with instant scoring</li>
+      <li>Explanations for every answer</li>
+    </ul>
+  </section>
+  <section class="auth-form">
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="sub">Log in to continue your practice.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" style="margin-bottom:14px">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="post" action="{{ url_for('auth.login') }}" novalidate data-validate data-loading>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="{{ email or '' }}" required autocomplete="email">
+          <div class="field-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+          <div class="field-error"></div>
+        </div>
+        <button class="btn btn-block" type="submit"><span class="spinner"></span><span class="label">Log in</span></button>
+      </form>
+      <p class="switch">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

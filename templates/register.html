@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block auth %}
+<div class="auth-wrap">
+  <section class="auth-side">
+    <h1>Create your free student account.</h1>
+    <p>Your quizzes, scores and answer reviews are saved so you can track progress.</p>
+    <ul>
+      <li>Generate unlimited practice quizzes</li>
+      <li>See your average score over time</li>
+      <li>Review every past attempt</li>
+    </ul>
+  </section>
+  <section class="auth-form">
+    <div class="auth-card">
+      <h2>Sign up</h2>
+      <p class="sub">It takes less than a minute.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" style="margin-bottom:14px">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="post" action="{{ url_for('auth.register') }}" novalidate data-validate data-loading>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" value="{{ name or '' }}" required minlength="2" maxlength="100" autocomplete="name">
+          <div class="field-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="{{ email or '' }}" required autocomplete="email">
+          <div class="field-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+          <div class="hint">At least 6 characters.</div>
+          <div class="field-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirm password</label>
+          <input type="password" id="confirm_password" name="confirm_password" required data-match="password" autocomplete="new-password">
+          <div class="field-error"></div>
+        </div>
+        <button class="btn btn-block" type="submit"><span class="spinner"></span><span class="label">Create account</span></button>
+      </form>
+      <p class="switch">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

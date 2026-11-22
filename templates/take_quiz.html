@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block heading %}{{ quiz.title }}{% endblock %}
+{% block subheading %}{{ quiz.subject }} · {{ quiz.difficulty }} · {{ questions|length }} questions{% endblock %}
+
+{% block content %}
+<div class="quiz-top">
+  <div class="progress-txt" id="progressText" style="margin:0">Question 1 of {{ questions|length }}</div>
+  <div class="timer" id="timer" role="timer" aria-live="off">⏱ <span id="timeLeft">--:--</span></div>
+</div>
+<div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+<div class="progress-txt" id="answeredText">0 answered</div>
+
+<div class="grid quiz-layout">
+  <section class="card">
+    <div class="q-num" id="qNum"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="options"></div>
+    <div class="quiz-nav">
+      <button class="btn btn-ghost" id="prevBtn" type="button">← Previous</button>
+      <button class="btn btn-ghost btn-mark" id="markBtn" type="button">⚑ Mark for review</button>
+      <button class="btn" id="nextBtn" type="button">Next →</button>
+    </div>
+  </section>
+
+  <aside class="card">
+    <h2>Questions</h2>
+    <div class="palette" id="palette"></div>
+    <div class="legend">
+      <span><i class="dot a"></i>Answered</span>
+      <span><i class="dot m"></i>Marked for review</span>
+      <span><i class="dot"></i>Not answered</span>
+    </div>
+    <button class="btn btn-block" id="submitBtn" type="button">Submit quiz</button>
+  </aside>
+</div>
+
+<div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal-box">
+    <h3 id="confirmTitle">Submit your quiz?</h3>
+    <div class="sum" id="confirmSummary"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelSubmit" type="button">Keep working</button>
+      <button class="btn" id="confirmSubmit" type="button">Submit now</button>
+    </div>
+  </div>
+</div>
+
+<form id="submitForm" method="post" action="{{ url_for('quiz.submit', quiz_id=quiz.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="token" value="{{ token }}">
+  <input type="hidden" name="answers" id="answersInput">
+  <input type="hidden" name="time_taken" id="timeTakenInput">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Questions do NOT contain correct answers (kept on the server until submission).
+  window.QUIZ_DATA = {
+    questions: {{ questions|tojson }},
+    timeLimit: {{ time_limit|default(questions|length * 60) }}
+  };
+</script>
+{% endblock %}

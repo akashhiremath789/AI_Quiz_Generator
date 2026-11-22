@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ 'My Quizzes' if (view == 'quizzes') else 'Quiz History' }}{% endblock %}
+{% block heading %}{{ 'My quizzes' if (view == 'quizzes') else 'Quiz history' }}{% endblock %}
+{% block subheading %}{{ 'Every quiz you have generated.' if (view == 'quizzes') else 'All your past attempts and scores.' }}{% endblock %}
+
+{% block content %}
+{% if (view == 'quizzes') %}
+  {% if quizzes %}
+  <div class="grid quiz-cards">
+    {% for q in quizzes %}
+    <article class="card qcard">
+      <div class="meta">
+        <span class="badge b-info">{{ q.source_type|capitalize }}</span>
+        <span class="badge {{ 'b-good' if q.difficulty == 'Easy' else ('b-mid' if q.difficulty == 'Medium' else 'b-bad') }}">{{ q.difficulty }}</span>
+      </div>
+      <h3>{{ q.title }}</h3>
+      <div class="hint">{{ q.subject }}{% if q.topic %} · {{ q.topic }}{% endif %}</div>
+      <div class="hint">{{ q.total_questions }} questions · created {{ q.created_at.strftime('%d %b %Y') }} · {{ q.attempts }} attempt{{ '' if q.attempts == 1 else 's' }}</div>
+      <div class="actions">
+        <a class="btn btn-sm" href="{{ url_for('quiz.take', quiz_id=q.id) }}">Start quiz</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card empty">
+    <div class="big">📚</div><h3>No quizzes yet</h3>
+    <p>Generate your first quiz from a topic or a PDF.</p>
+    <a class="btn btn-sm" href="{{ url_for('quiz.generate') }}">Generate a quiz</a>
+  </div>
+  {% endif %}
+{% else %}
+  {% if attempts %}
+  <div class="card table-wrap">
+    <table>
+      <thead><tr><th>Quiz</th><th>Difficulty</th><th>Score</th><th>Time</th><th>Attempted</th><th></th></tr></thead>
+      <tbody>
+      {% for a in attempts %}
+        <tr>
+          <td><strong>{{ a.title }}</strong><div class="hint">{{ a.subject }}</div></td>
+          <td>{{ a.difficulty }}</td>
+          <td><span class="badge {{ 'b-good' if a.percentage >= 70 else ('b-mid' if a.percentage >= 40 else 'b-bad') }}">{{ a.score }}/{{ a.total_questions }} · {{ a.percentage }}%</span></td>
+          <td>{{ a.time_display }}</td>
+          <td>{{ a.attempted_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+          <td style="white-space:nowrap">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('quiz.result', attempt_id=a.id) }}">View details</a>
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('quiz.take', quiz_id=a.quiz_id) }}">Retake</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card empty">
+    <div class="big">🕘</div><h3>No attempts yet</h3>
+    <p>Take a quiz and your results will be saved here.</p>
+    <a class="btn btn-sm" href="{{ url_for('history.my_quizzes') }}">Go to My Quizzes</a>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

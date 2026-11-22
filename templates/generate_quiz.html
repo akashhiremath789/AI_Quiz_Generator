@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Generate Quiz{% endblock %}
+{% block heading %}Generate a quiz{% endblock %}
+{% block subheading %}Tell the AI what you want to practise.{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+  <form method="post" action="{{ url_for('quiz.generate') }}" novalidate data-validate data-loading>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" value="{{ form.subject if form else '' }}" placeholder="e.g. Data Structures" required maxlength="100">
+        <div class="field-error"></div>
+      </div>
+      <div class="form-group">
+        <label for="topic">Topic</label>
+        <input type="text" id="topic" name="topic" value="{{ form.topic if form else '' }}" placeholder="e.g. Binary Search Trees" required maxlength="150">
+        <div class="field-error"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Number of questions</label>
+      <div class="choice">
+        {% for n in [5, 10, 15] %}
+        <input type="radio" name="num_questions" id="n{{ n }}" value="{{ n }}" {{ 'checked' if (form.num_questions if form else '5')|string == n|string }}>
+        <label for="n{{ n }}">{{ n }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Difficulty</label>
+      <div class="choice">
+        {% for d in ['Easy', 'Medium', 'Hard'] %}
+        <input type="radio" name="difficulty" id="d{{ d }}" value="{{ d }}" {{ 'checked' if (form.difficulty if form else 'Medium') == d }}>
+        <label for="d{{ d }}">{{ d }}</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button class="btn" type="submit"><span class="spinner"></span><span class="label" data-loading-text="Generating… this can take a few seconds">Generate quiz</span></button>
+  </form>
+</div>
+{% endblock %}

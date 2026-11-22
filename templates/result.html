@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block heading %}Your result{% endblock %}
+{% block subheading %}{{ attempt.title }} · {{ attempt.subject }}{% endblock %}
+
+{% block content %}
+<section class="card score-card">
+  <div class="ring" style="--p: {{ attempt.percentage }}">
+    <div class="ring-in"><div><b>{{ attempt.percentage }}%</b><span>{{ attempt.score }} / {{ attempt.total_questions }} marks</span></div></div>
+  </div>
+  <div>
+    <h2>{% if attempt.percentage >= 80 %}Excellent work!{% elif attempt.percentage >= 60 %}Good job, keep going.{% elif attempt.percentage >= 40 %}You're getting there.{% else %}Review the answers below and try again.{% endif %}</h2>
+    <div class="mini" style="margin-top:14px">
+      <div><b>{{ attempt.total_questions }}</b><span>Total questions</span></div>
+      <div class="c"><b>{{ stats.correct }}</b><span>Correct</span></div>
+      <div class="w"><b>{{ stats.incorrect }}</b><span>Incorrect</span></div>
+      <div><b>{{ stats.unanswered }}</b><span>Unanswered</span></div>
+      <div><b>{{ attempt.time_display }}</b><span>Time taken</span></div>
+    </div>
+  </div>
+</section>
+
+<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+  <a class="btn" href="{{ url_for('quiz.take', quiz_id=attempt.quiz_id) }}">Retake quiz</a>
+  <a class="btn btn-ghost" href="{{ url_for('history.history') }}">Quiz history</a>
+  <a class="btn btn-ghost" href="{{ url_for('quiz.generate') }}">New quiz</a>
+</div>
+
+<h2 style="margin:6px 0 14px">Answer review</h2>
+<div class="review">
+  {% for q in review %}
+  {% set state = 'skip' if not q.selected_answer else ('ok' if q.is_correct else 'no') %}
+  <article class="card rev {{ state }}">
+    <div class="rev-head">
+      <strong>Question {{ loop.index }}</strong>
+      {% if state == 'ok' %}<span class="badge b-good">✓ Correct</span>
+      {% elif state == 'no' %}<span class="badge b-bad">✗ Incorrect</span>
+      {% else %}<span class="badge b-mid">Not answered</span>{% endif %}
+    </div>
+    <h3>{{ q.question_text }}</h3>
+    {% for letter in ['A', 'B', 'C', 'D'] %}
+      {% set text = q['option_' ~ letter|lower] %}
+      {% set is_right = (letter == q.correct_answer) %}
+      {% set is_mine = (letter == q.selected_answer) %}
+      <div class="ropt {{ 'correct' if is_right else ('wrong' if is_mine else '') }}">
+        <span class="opt-letter">{{ letter }}</span>
+        <span>{{ text }}</span>
+        {% if is_right and is_mine %}<span class="tag" style="color:#0F7A55">Your answer · Correct</span>
+        {% elif is_right %}<span class="tag" style="color:#0F7A55">Correct answer</span>
+        {% elif is_mine %}<span class="tag" style="color:#B3262B">Your answer</span>{% endif %}
+      </div>
+    {% endfor %}
+    <div class="explain"><strong>Explanation:</strong> {{ q.explanation }}</div>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}
